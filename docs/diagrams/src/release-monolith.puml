@@ -1,0 +1,89 @@
+@startuml release-monolith
+
+!include docs/diagrams/src/style.puml
+!include docs/diagrams/src/common.puml
+
+title Несколько команд разработки выводят релизы в одну платформу
+
+caption Неизбежный релизный процесс в платформенной архитектуре
+
+
+left to right direction
+
+
+together {
+    cloud backlog1 as "Backlog Team A" {
+        $artifact(f1,"F1","commit")
+        $artifact(f2,"F2","commit")
+        $artifact(f3,"F3","commit")
+        f1 --> f2
+        f2 --> f3
+    }    
+    rectangle team1 as "X-Func Team A"{
+        person d1 as "Dev"
+        person d2 as "Dev"
+        person d3 as "Dev"
+        person t1 as "Test"
+    }
+    f3 --> team1
+}
+
+together {
+    cloud backlog2 as "Backlog Team B" {
+        $artifact(fo1,"O1","commit")
+        $artifact(fo2,"O2","commit")
+        $artifact(fo3,"O3","commit")
+        fo1 --> fo2
+        fo2 --> fo3
+    }    
+    rectangle team2 as "X-Func Team B"{
+        person d21 as "Dev"
+        person d22 as "Dev"
+        person d23 as "Dev"
+        person t21 as "Test"
+    }
+    fo3 --> team2
+}
+
+together {
+    cloud backlog3 as "Backlog Team C" {
+        $artifact(fe1,"FE1","commit")
+        $artifact(fe2,"FE2","commit")
+        $artifact(fe3,"FE3","commit")
+        fe1 --> fe2
+        fe2 --> fe3
+    }
+    rectangle team3 as "X-Func Team C"{
+        person d31 as "Dev"
+        person d32 as "Dev"
+        person d33 as "Dev"
+        person t31 as "Test"
+    }
+    fe3 --> team3
+}
+
+$queue(release, "Single Release Process", "SRP")
+
+team1 ---> release
+team2 ---> release
+team3 ---> release
+
+rectangle platform as "Platform" {
+    together {
+        $comp(deal, "Deal Component", "Planform lang, i.e.Java")
+        $comp(scan, "Scan upload Component", "Planform lang, i.e.Java")
+        $comp(egrul, "Egrul mining Component", "Planform lang, i.e.Java")
+        $comp(dept, "Dept mining Component", "Planform lang, i.e.Java")
+        $comp(security, "Security checkup Component", "Planform lang, i.e.Java")
+        $comp(entityml, "Entity ML mining Component", "Planform lang, i.e.Java")
+        $comp(control, "Control checkup Component", "Planform lang, i.e.Java")
+    }
+}
+
+release ---> deal
+release ---> scan
+release ---> egrul
+release ---> dept
+release ---> entityml
+
+@enduml

@@ -1,0 +1,127 @@
+@startuml release-composable
+
+!include docs/diagrams/src/style.puml
+!include docs/diagrams/src/common.puml
+
+title Несколько команд разработки выводят релизы независимо каждая в свой микросервис
+
+caption Независимый релизный процесс в компонуемой архитектуре
+
+
+left to right direction
+
+
+together {
+    cloud backlog1 as "Backlog Team A" {
+        $artifact(f1,"F1","commit")
+        $artifact(f2,"F2","commit")
+        $artifact(f3,"F3","commit")
+        f1 --> f2
+        f2 --> f3
+    }    
+    rectangle team1 as "X-Func Team A"{
+        person d1 as "Dev"
+        person d2 as "Dev"
+        person d3 as "Dev"
+        person t1 as "Test"
+    }
+    f3 --> team1
+}
+
+together {
+    cloud backlog2 as "Backlog Team B" {
+        $artifact(fo1,"O1","commit")
+        $artifact(fo2,"O2","commit")
+        $artifact(fo3,"O3","commit")
+        fo1 --> fo2
+        fo2 --> fo3
+    }    
+    rectangle team2 as "X-Func Team B"{
+        person d21 as "Dev"
+        person d22 as "Dev"
+        person d23 as "Dev"
+        person t21 as "Test"
+    }
+    fo3 --> team2
+}
+
+together {
+    cloud backlog3 as "Backlog Team C" {
+        $artifact(fe1,"FE1","commit")
+        $artifact(fe2,"FE2","commit")
+        $artifact(fe3,"FE3","commit")
+        fe1 --> fe2
+        fe2 --> fe3
+    }
+    rectangle team3 as "X-Func Team C"{
+        person d31 as "Dev"
+        person d32 as "Dev"
+        person d33 as "Dev"
+        person t31 as "Test"
+    }
+    fe3 --> team3
+}
+
+together {
+    cloud backlog4 as "Backlog Team D" {
+        $artifact(fd1,"FD1","commit")
+        $artifact(fd2,"FD2","commit")
+        $artifact(fd3,"FD3","commit")
+        fd1 --> fd2
+        fd2 --> fd3
+    }
+    rectangle team4 as "X-Func Team D"{
+        person d41 as "Dev"
+        person d42 as "Dev"
+        person d43 as "Dev"
+        person t41 as "Test"
+    }
+    fd3 --> team4
+}
+
+$queue(release1, "Release Process", "RP")
+$queue(release2, "Release Process", "RP")
+$queue(release3, "Release Process", "RP")
+$queue(release4, "Release Process", "RP")
+
+team1 ---> release1
+team2 ---> release2
+team3 ---> release3
+team4 ---> release4
+
+together {
+    together {
+        $microservice(deal, "Deal MS", "Go/Java/C#/Python")
+        $db(dealdb, "Deal DB", "PostgreSQL")
+        deal -- dealdb
+    }
+
+    together {
+        $microservice(scan, "Scan upload MS", "Go|Java|C#|Python")
+        $db(scandb, "Scan metadata DB", "PostgreSQL")
+        scan -- scandb
+    }
+
+    together {
+        $microservice(egrul, "Egrul mining MS", "Go|Java|C#|Python")
+        $db(egruldb, "Egrul mining DB", "PostgreSQL")
+        egrul -- egruldb
+    }
+
+    together {
+        $microservice(entityml, "Entity ML mining MS", "Go|Java|C#|Python")
+        $db(entitymldb, "Entity ML mining DB", "PostgreSQL")
+        entityml -- entitymldb
+    }
+
+    together {
+        $microservice(security, "Security checkup MS", "Go|Java|C#|Python")
+        $db(securitydb, "Security DB", "PostgreSQL")
+        security -- securitydb
+    }
+}
+release1 ---> egrul
+release2 ---> deal
+release3 ---> scan
+release4 ---> entityml
+@enduml

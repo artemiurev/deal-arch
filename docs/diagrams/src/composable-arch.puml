@@ -1,0 +1,157 @@
+@startuml composable-arch
+
+!include docs/diagrams/src/style.puml
+!include docs/diagrams/src/common.puml
+
+title Composable architecture based on microservice horeography saga pattern
+
+top to bottom direction
+
+$comp(mobileapp, "Mobile App", "iOS or Android")
+$comp(frontend, "Frontend App", "Js or Angular or Vue")
+$node(gw, "API Gateway", "NGINX")
+
+
+$queue(bus, "                            Event Queue Bus                              ", "Kafka")
+
+$db(s3db, "S3 Objects Store", "AWS S3")
+
+together {
+    $microservice(deal, "Deal MS", "Go/Java/C#/Python")
+    $db(dealdb, "Deal DB", "PostgreSQL")
+    deal -- dealdb
+}
+
+together {
+    $microservice(scan, "Scan upload MS", "Go|Java|C#|Python")
+    $db(scandb, "Scan metadata DB", "PostgreSQL")
+    scan -- scandb
+}
+
+together {
+    $microservice(egrul, "Egrul mining MS", "Go|Java|C#|Python")
+    $db(egruldb, "Egrul mining DB", "PostgreSQL")
+    egrul -- egruldb
+}
+
+together {
+    $microservice(dept, "Dept mining MS", "Go|Java|C#|Python")
+    $db(deptdb, "Dept mining DB", "PostgreSQL")
+    dept -- deptdb
+}
+
+together {
+    $microservice(security, "Security checkup MS", "Go|Java|C#|Python")
+    $db(securitydb, "Security DB", "PostgreSQL")
+    security -- securitydb
+}
+
+together {
+    $microservice(entityml, "Entity ML mining MS", "Go|Java|C#|Python")
+    $db(entitymldb, "Entity ML mining DB", "PostgreSQL")
+    entityml -- entitymldb
+}
+
+together {
+    $microservice(control, "Control checkup MS", "Go|Java|C#|Python")
+    $db(controldb, "Control checkup DB", "PostgreSQL")
+    control -- controldb
+}
+
+together {
+    $microservice(notification, "Notification MS", "Go|Java|C#|Python")
+    $db(notificationdb, "Notification DB", "PostgreSQL")
+    notification -- notificationdb
+}
+
+together {
+    $microservice(conclusion, "Conclusion MS", "Go|Java|C#|Python")
+    $db(conclusiondb, "Conclusion DB", "PostgreSQL")
+    conclusion -- conclusiondb
+}
+
+cloud innercloud as "Inner network" {
+    $collections(reest,"Внутренний реестр", "REST JSON")
+}
+
+cloud cloud1 as "Internet" {
+    $collections(reestregrul,"Реестр ЕГРЮЛ", "SOAP XML")
+    $collections(reestrdept,"Реестр долгов", "REST JSON")
+}
+
+cloud cloud2 as "Internet" {
+    $node(GCM,"Google Messaging", "REST API")
+    $node(ACM,"Apple Messaging", "REST API")
+    $node(SCM,"SMS Gateway", "REST API")
+}
+
+
+
+
+frontend -(0- gw : API
+mobileapp -(0- gw : API
+
+gw -(0- deal: Управление сделками
+gw -(0- scan: Scan upload API
+scan ---> s3db: Сканы документов
+
+deal ---> bus #red;text:red : Публикация P01 событий
+bus ...> deal #BlueViolet;text:BlueViolet : Подписка S01 на события
+
+scan ---> bus #red;text:red : Публикация P02 событий
+bus ...> scan #BlueViolet;text:BlueViolet : Подписка S02 на события
+
+egrul ---> bus #red;text:red : Публикация P03 событий
+bus ...> egrul #BlueViolet;text:BlueViolet : Подписка S03 на события
+egrul -(0-- reestregrul: Выписки ЕГРЮЛ
+
+dept ---> bus #red;text:red : Публикация P04 событий
+bus ...> dept #BlueViolet;text:BlueViolet : Подписка S04 на события
+dept -(0-- reestrdept: Данные о долгах
+
+security ---> bus #red;text:red : Публикация P05 событий
+bus ...> security #BlueViolet;text:BlueViolet : Подписка S05 на события
+security -(0-- reest: Проверка по внутренним реестрам
+
+
+entityml ---> bus #red;text:red : Публикация P06 событий
+bus ...> entityml #BlueViolet;text:BlueViolet : Подписка S06 на события
+gw -(0- entityml: Управление, обучение, словари
+s3db ---> entityml: Сканы документов
+
+control ---> bus #red;text:red : Публикация P07 событий
+bus ...> control #BlueViolet;text:BlueViolet : Подписка S07 на события
+gw -(0- control: Исправление вручную 5% ошибок, управление
+s3db ---> control: Сканы документов
+
+notification ---> bus #red;text:red : Публикация P08 событий
+bus ...> notification #BlueViolet;text:BlueViolet : Подписка S08 на события
+notification -(0- GCM
+notification -(0- ACM
+notification -(0- SCM
+
+'GCM ...> mobileapp: Push messages
+'ACM ...> mobileapp: Push messages
+
+
+
+conclusion --> bus #red;text:red : Публикация P09 событий
+bus ...> conclusion #BlueViolet;text:BlueViolet : Подписка S09 на события
+gw --(0-- conclusion: Результаты проверок. Заключение.
+
+
+legend
+{{
+
+map "Arrows legend " as arrows {
+    \n{{\nleft to right direction\nskinparam backgroundcolor transparent\nlabel MS \n}}\n => \n<font:monospaced.bold>Микросервис</font>
+    \n{{\nleft to right direction\nskinparam backgroundcolor transparent\nlabel " " as A\nlabel " " as B\nA --> B #red;text:red\n}}\n => \n<font:monospaced.bold>Публикация событий</font>
+    \n{{\nleft to right direction\nskinparam backgroundcolor transparent\nlabel " " as A\nlabel " " as B\nA ..> B #BlueViolet;text:BlueViolet\n}}\n => \n<font:monospaced.bold>Подписка на события</font>
+    \n{{\nleft to right direction\nskinparam backgroundcolor transparent\nlabel " " as A\nlabel " " as B\nA -(0- B \n}}\n => \n<font:monospaced.bold>Взаимодействие через API</font>
+
+}
+
+}}
+endlegend
+
+@enduml

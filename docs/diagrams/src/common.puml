@@ -1,0 +1,65 @@
+' Элементы
+
+' microservice
+!unquoted procedure $microservice($name, $label="ms", $technology="", $size=10)
+    hexagon $name as "
+    //<size:$size>[$technology]</size>//
+    **$label**
+    "
+!endprocedure
+
+' component
+!unquoted procedure $comp($name, $label="module", $technology="", $size=10)
+    component $name as "
+    //<size:$size>[$technology]</size>//
+    
+    **$label**"
+!endprocedure
+
+' module (component)
+!unquoted procedure $element($name, $label="module", $technology="", $size=10)
+    rectangle $name as "
+    //<size:$size>[$technology]</size>//
+    
+    **$label**"
+!endprocedure
+
+' module
+!unquoted procedure $node($name, $label="module", $technology="", $size=10)
+    node $name as "
+    //<size:$size>[$technology]</size>//
+    
+    **$label**"
+!endprocedure
+
+' collections
+!unquoted procedure $collections($name, $label="module", $technology="", $size=10)
+    collections $name as "
+    //<size:$size>[$technology]</size>//
+    
+    **$label**"
+!endprocedure
+
+' databases
+!unquoted procedure $db($name, $label="", $technology="", $size=10)
+    database $name as "
+    //<size:$size>[$technology]</size>//
+    **$label**
+    "
+!endprocedure
+
+!unquoted procedure $queue($name, $label="", $technology="", $size=10)
+    queue $name as "
+    //<size:$size>[$technology]</size>//
+    **$label**
+    "
+!endprocedure
+
+!unquoted procedure $artifact($name, $label="", $technology="", $size=10)
+    artifact $name as "
+    //<size:$size>[$technology]</size>//
+    **$label**
+    "
+!endprocedure
+
+
